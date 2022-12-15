@@ -1,7 +1,6 @@
 const expVar = require('express');
 const bodyParser = require('body-parser');
 const date = require(__dirname + "/date.js");
-
 // let ejs = require('ejs');
 
 const app = expVar();
@@ -20,7 +19,7 @@ app.get("/",function(req,res){
     //let day = date.getDay;
     res.render("list",{
         listTitle:day,
-        listEjsVar:items
+        listEjsVar:items,
     });
 
     //Error : [ERR_INVALID_ARG_TYPE] 
