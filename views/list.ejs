@@ -1,0 +1,23 @@
+
+   <%-include('header')-%> 
+    <div class="box">
+        <h1 id="heading"><%= listTitle %></h1>
+    </div>
+
+    <div class="box">
+        
+            <% for (let index = 0; index < listEjsVar.length; index++) {%>
+                <div class="item">
+                    <input type="checkbox">
+                    <p> <%= listEjsVar[index] %> </p>
+                </div>
+            <% } %>
+            
+            <!--  -->
+            <form class="" action="/" method="post">
+                <input placeholder="Enter New Item" type="text" id="usernameInp" name="newItem" autocomplete="off">
+                <button type="submit" name="list" value=<%= listTitle %> >+</button>
+            </form>
+    </div>
+    
+    <%-include('footer')-%> 
