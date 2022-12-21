@@ -1,12 +1,13 @@
 const expVar = require('express');
 const bodyParser = require('body-parser');
 const date = require(__dirname + "/date.js");
+const favicon = require('serve-favicon')
 // let ejs = require('ejs');
-
+var path = require('path')
 const app = expVar();
 
 app.set('view engine', 'ejs');
-
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(expVar.static("public"));
 
