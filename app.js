@@ -11,30 +11,93 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(expVar.static("public"));
 
-const items = ["Go Out","Buy Food","Cook Food","Eat Food"];
+// Mongo DB Connection---------------------
+const mongoose = require("mongoose");
+
+mongoose.set('strictQuery', false);
+mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true });
+//-----------------------------------------
+
+// Mongo DB Collection Schema--------------
+
+const itemsSchema = new mongoose.Schema({
+    name:{
+        required:[true,"Name Is Required"],
+        type:String
+    }
+});
+
+const Item = new mongoose.model("ListItem",itemsSchema);
+
+//-----------------------------------------
+
+const items = [];
 const workItems = [];
+
+function insertIntoDb(item){
+    Item.insertMany([item],function(err,results){
+
+        if(err){
+            console.log(err)
+        }else{
+            console.log("Inserted Successfully !")
+            console.log(results);
+        }
+    
+        
+    });
+}
+
+function findItem(){
+    Item.find({},function(err,results){
+
+        if(err){
+            console.log(err)
+        }else{
+            console.log("All Items Fetched !")
+            
+            results.forEach(element => {
+                console.log(element.name); 
+                items.push(element.name);   
+            });
+            
+        }
+
+        // mongoose.connection.close(function(){
+        //     console.log('connection terminated');
+        //     process.exit(0);
+        // });
+    });
+}
 
 app.get("/",function(req,res){
 
+    findItem();
+
     const day = date.getDate();
-    //let day = date.getDay;
+    const year = date.getYear();
+    
     res.render("list",{
         listTitle:day,
         listEjsVar:items,
+        currYear:year
     });
-
-    //Error : [ERR_INVALID_ARG_TYPE] 
-    // res.render()
 });
 
 app.post("/",function(req,res){
-    var item = req.body.newItem;
+    // var item = req.body.newItem;
+    
+    const item = new Item({
+        name:req.body.newItem
+    });
+
+    
 
     if(req.body.list === "Work"){
         workItems.push(item);
         res.redirect("/work");
     }else{
-        items.push(item);
+        insertIntoDb(item);
         res.redirect("/");
     }
 })

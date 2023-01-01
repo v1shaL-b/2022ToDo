@@ -19,3 +19,10 @@ exports.getDay = function(){
     
     return today.toLocaleDateString("en-US",options);
 };
+
+exports.getYear = function(){
+    const d = new Date();
+    const year = d.getFullYear();
+    
+    return year;
+};
