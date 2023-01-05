@@ -4,20 +4,29 @@
         <h1 id="heading"><%= listTitle %></h1>
     </div>
 
-    <div class="box">
+    <div class="box scroll">
         
             <% for (let index = 0; index < listEjsVar.length; index++) {%>
-                <div class="item">
-                    <input type="checkbox">
-                    <p> <%= listEjsVar[index] %> </p>
-                </div>
+                
+                <form action="/delete" method="post">
+                    <div class="item">
+                        <input type="checkbox" id="myCheckbox"  name="checkbox" >
+                        <p> <%= listEjsVar[index].name %> </p>                   
+                        
+                        <button onclick="this.form.submit()" name="list" value=<%= listEjsVar[index]._id %> > <i class="bi bi-trash"></i> </button>
+                    </div>
+                </form>
+                
             <% } %>
             
             <!--  -->
-            <form class="" action="/" method="post">
-                <input placeholder="Enter New Item" type="text" id="usernameInp" name="newItem" autocomplete="off">
-                <button type="submit" name="list" value=<%= listTitle %> >+</button>
-            </form>
+            
+    </div>
+    <div class="box">
+        <form class="item" action="/" method="post">
+            <input placeholder="Enter New Item" autofocus type="text" id="usernameInp" name="newItem" autocomplete="off">
+            <button class="submitBtn" type="submit" name="list" value=<%= listTitle %> > + </button>
+        </form>
     </div>
     
     <%-include('footer')-%> 

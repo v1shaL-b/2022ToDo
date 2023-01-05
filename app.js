@@ -5,6 +5,7 @@ const favicon = require('serve-favicon')
 // let ejs = require('ejs');
 var path = require('path')
 const app = expVar();
+require('dotenv').config()
 
 app.set('view engine', 'ejs');
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
@@ -31,7 +32,7 @@ const Item = new mongoose.model("ListItem",itemsSchema);
 
 //-----------------------------------------
 
-const items = [];
+let items = [];
 const workItems = [];
 
 function insertIntoDb(item){
@@ -41,46 +42,68 @@ function insertIntoDb(item){
             console.log(err)
         }else{
             console.log("Inserted Successfully !")
-            console.log(results);
+            // console.log(results);
         }
     
         
     });
 }
 
-function findItem(){
+function findItem(res){
     Item.find({},function(err,results){
 
         if(err){
             console.log(err)
         }else{
-            console.log("All Items Fetched !")
+            // console.log("All Items Fetched !")
             
             results.forEach(element => {
-                console.log(element.name); 
-                items.push(element.name);   
+                // console.log(element);
+                items.push(element);
             });
             
+            const day = date.getDate();
+            const year = date.getYear();
+            
+            res.render("list",{
+                listTitle:day,
+                listEjsVar:items,
+                currYear:year
+            });
         }
-
-        // mongoose.connection.close(function(){
-        //     console.log('connection terminated');
-        //     process.exit(0);
-        // });
     });
 }
 
+app.post("/delete",function(req,res){
+
+    const checkbox = req.body.checkbox;
+    const val = checkbox;
+    // console.log(checkbox)
+
+    Item.deleteOne({_id:val},function(err,results){
+        if(err){
+            console.log(err)
+        }else{
+            if(results){
+                res.redirect("/")
+            }
+        }
+    });
+})
+
 app.get("/",function(req,res){
+    Item.find({},function(err,results){
 
-    findItem();
-
-    const day = date.getDate();
-    const year = date.getYear();
-    
-    res.render("list",{
-        listTitle:day,
-        listEjsVar:items,
-        currYear:year
+        if(results.length === 0){
+            res.render("list",{
+                listTitle:"Please Insert Items To Start !",
+                listEjsVar:"",
+                currYear:""
+            });
+        }else{
+            items = [];
+            findItem(res);
+        }
     });
 });
 
@@ -124,8 +147,11 @@ app.post("/work",function(req,res){
     res.redirect("/work");
 });
 
+app.use((req,res,next) => {
+    console.log(req.path,req.method)
+    next()
+})
 
-
-app.listen(3000,function(){
-    console.log("Server started on 3000 port !");
+app.listen(process.env.PORT,function(){
+    console.log("Server started on " + process.env.PORT + " port !");
 })
