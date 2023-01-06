@@ -10,10 +10,10 @@
                 
                 <form action="/delete" method="post">
                     <div class="item">
-                        <input type="checkbox" id="myCheckbox"  name="checkbox" >
-                        <p> <%= listEjsVar[index].name %> </p>                   
+                        <input type="checkbox" id="myCheckbox"  name="checkbox" onchange="this.form.submit()" value=<%= listEjsVar[index]._id %> >
+                        <p> <%= listEjsVar[index].name %> </p>
                         
-                        <button onclick="this.form.submit()" name="list" value=<%= listEjsVar[index]._id %> > <i class="bi bi-trash"></i> </button>
+                        <!-- <button onclick="this.form.submit()" name="list" value=<%= listEjsVar[index]._id %> > <i class="bi bi-trash"></i> </button> -->
                     </div>
                 </form>
                 

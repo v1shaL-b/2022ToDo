@@ -28,15 +28,39 @@ const itemsSchema = new mongoose.Schema({
     }
 });
 
-const Item = new mongoose.model("ListItem",itemsSchema);
+const DefaultItemList = new mongoose.model("ListItem",itemsSchema);
+
+const singleItem = new DefaultItemList({
+    name:"Item 1"
+})
+
+const DefaultItems = [singleItem];
+
+const dynamicItemSchema = new mongoose.Schema({
+    name:String,
+    items:[itemsSchema]
+});
+
+const DynamicItem = new mongoose.model("List",dynamicItemSchema);
 
 //-----------------------------------------
 
 let items = [];
-const workItems = [];
+
+app.get("/:customListName", function(req,res){
+    const customListName = req.params.customListName;
+
+    const dynamicItem = new DynamicItem({
+        name:customListName,
+        items:DefaultItems
+    })
+
+    dynamicItem.save();
+
+});
 
 function insertIntoDb(item){
-    Item.insertMany([item],function(err,results){
+    DefaultItemList.insertMany([item],function(err,results){
 
         if(err){
             console.log(err)
@@ -50,7 +74,7 @@ function insertIntoDb(item){
 }
 
 function findItem(res){
-    Item.find({},function(err,results){
+    DefaultItemList.find({},function(err,results){
 
         if(err){
             console.log(err)
@@ -80,7 +104,7 @@ app.post("/delete",function(req,res){
     const val = checkbox;
     // console.log(checkbox)
 
-    Item.deleteOne({_id:val},function(err,results){
+    DefaultItemList.deleteOne({_id:val},function(err,results){
         if(err){
             console.log(err)
         }else{
@@ -92,7 +116,7 @@ app.post("/delete",function(req,res){
 })
 
 app.get("/",function(req,res){
-    Item.find({},function(err,results){
+    DefaultItemList.find({},function(err,results){
 
         if(results.length === 0){
             res.render("list",{
@@ -110,42 +134,14 @@ app.get("/",function(req,res){
 app.post("/",function(req,res){
     // var item = req.body.newItem;
     
-    const item = new Item({
+    const item = new DefaultItemList({
         name:req.body.newItem
     });
 
+    insertIntoDb(item);
+    res.redirect("/");
     
-
-    if(req.body.list === "Work"){
-        workItems.push(item);
-        res.redirect("/work");
-    }else{
-        insertIntoDb(item);
-        res.redirect("/");
-    }
 })
-
-app.get("/work",function(req,res){
-
-    res.render("list",
-        {
-            listTitle : "Work List",
-            listEjsVar : workItems
-        }
-    )
-});
-
-app.get("/about",function(req,res){
-
-    res.render("about")
-});
-
-app.post("/work",function(req,res){
-    let item = req.body.newItem;
-    workItems.push(item);
-
-    res.redirect("/work");
-});
 
 app.use((req,res,next) => {
     console.log(req.path,req.method)
