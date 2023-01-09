@@ -1,152 +1,140 @@
-const expVar = require('express');
-const bodyParser = require('body-parser');
-const date = require(__dirname + "/date.js");
-// let ejs = require('ejs');
-var path = require('path')
-const app = expVar();
-require('dotenv').config()
+//jshint esversion:6
+
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const _ = require("lodash");
+
+const app = express();
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(expVar.static("public"));
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.static("public"));
 
-// Mongo DB Connection---------------------
-const mongoose = require("mongoose");
+mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
 
-mongoose.set('strictQuery', false);
-mongoose.connect("mongodb://localhost:27017/todolistDB", { useNewUrlParser: true });
-//-----------------------------------------
+const itemsSchema = {
+  name: String
+};
 
-// Mongo DB Collection Schema--------------
+const Item = mongoose.model("Item", itemsSchema);
 
-const itemsSchema = new mongoose.Schema({
-    name:{
-        required:[true,"Name Is Required"],
-        type:String
+
+const item1 = new Item({
+  name: "Welcome to your todolist!"
+});
+
+const item2 = new Item({
+  name: "Hit the + button to add a new item."
+});
+
+const item3 = new Item({
+  name: "<-- Hit this to delete an item."
+});
+
+const defaultItems = [item1, item2, item3];
+
+const listSchema = {
+  name: String,
+  items: [itemsSchema]
+};
+
+const List = mongoose.model("List", listSchema);
+
+
+app.get("/", function(req, res) {
+
+  Item.find({}, function(err, foundItems){
+
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function(err){
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Successfully savevd default items to DB.");
+        }
+      });
+      res.redirect("/");
+    } else {
+      res.render("list", {listTitle: "Today", newListItems: foundItems});
     }
-});
-
-const DefaultItemList = new mongoose.model("ListItem",itemsSchema);
-
-const singleItem = new DefaultItemList({
-    name:"Item 1"
-})
-
-const DefaultItems = [singleItem];
-
-const dynamicItemSchema = new mongoose.Schema({
-    name:String,
-    items:[itemsSchema]
-});
-
-const DynamicItem = new mongoose.model("List",dynamicItemSchema);
-
-//-----------------------------------------
-
-let items = [];
-
-app.get("/:customListName", function(req,res){
-    const customListName = req.params.customListName;
-
-    const dynamicItem = new DynamicItem({
-        name:customListName,
-        items:DefaultItems
-    })
-
-    dynamicItem.save();
+  });
 
 });
 
-function insertIntoDb(item){
-    DefaultItemList.insertMany([item],function(err,results){
+app.get("/:customListName", function(req, res){
+  const customListName = _.capitalize(req.params.customListName);
 
-        if(err){
-            console.log(err)
-        }else{
-            console.log("Inserted Successfully !")
-            // console.log(results);
-        }
-    
-        
-    });
-}
+  List.findOne({name: customListName}, function(err, foundList){
+    if (!err){
+      if (!foundList){
+        //Create a new list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+        list.save();
+        res.redirect("/" + customListName);
+      } else {
+        //Show an existing list
 
-function findItem(res){
-    DefaultItemList.find({},function(err,results){
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }
+  });
 
-        if(err){
-            console.log(err)
-        }else{
-            // console.log("All Items Fetched !")
-            
-            results.forEach(element => {
-                // console.log(element);
-                items.push(element);
-            });
-            
-            const day = date.getDate();
-            const year = date.getYear();
-            
-            res.render("list",{
-                listTitle:day,
-                listEjsVar:items,
-                currYear:year
-            });
-        }
-    });
-}
 
-app.post("/delete",function(req,res){
 
-    const checkbox = req.body.checkbox;
-    const val = checkbox;
-    // console.log(checkbox)
-
-    DefaultItemList.deleteOne({_id:val},function(err,results){
-        if(err){
-            console.log(err)
-        }else{
-            if(results){
-                res.redirect("/")
-            }
-        }
-    });
-})
-
-app.get("/",function(req,res){
-    DefaultItemList.find({},function(err,results){
-
-        if(results.length === 0){
-            res.render("list",{
-                listTitle:"Please Insert Items To Start !",
-                listEjsVar:"",
-                currYear:""
-            });
-        }else{
-            items = [];
-            findItem(res);
-        }
-    });
 });
 
-app.post("/",function(req,res){
-    // var item = req.body.newItem;
-    
-    const item = new DefaultItemList({
-        name:req.body.newItem
-    });
+app.post("/", function(req, res){
 
-    insertIntoDb(item);
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+
+  const item = new Item({
+    name: itemName
+  });
+
+  if (listName === "Today"){
+    item.save();
     res.redirect("/");
-    
-})
+  } else {
+    List.findOne({name: listName}, function(err, foundList){
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + listName);
+    });
+  }
+});
 
-app.use((req,res,next) => {
-    console.log(req.path,req.method)
-    next()
-})
+app.post("/delete", function(req, res){
+  const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName;
 
-app.listen(process.env.PORT,function(){
-    console.log("Server started on " + process.env.PORT + " port !");
-})
+  if (listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function(err){
+      if (!err) {
+        console.log("Successfully deleted checked item.");
+        res.redirect("/");
+      }
+    });
+  } else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}, function(err, foundList){
+      if (!err){
+        res.redirect("/" + listName);
+      }
+    });
+  }
+
+
+});
+
+app.get("/about", function(req, res){
+  res.render("about");
+});
+
+app.listen(3000, function() {
+  console.log("Server started on port 3000");
+});

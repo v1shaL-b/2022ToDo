@@ -1,10 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-
 html {
   background-color: #E4E9FD;
-  background-image: -webkit-linear-gradient(-64deg, #e4c2ef 20%, #cb97dd 40%, #ca8ede 50%);
-  height: 100vh;
-  font-family: 'Roboto';
+  background-image: -webkit-linear-gradient(65deg, #A683E3 50%, #E4E9FD 50%);
+  min-height: 1000px;
+  font-family: 'helvetica neue';
 }
 
 h1 {
@@ -13,20 +11,15 @@ h1 {
 }
 
 .box {
-  max-width: 30%;
-  margin: 1% auto;
+  max-width: 400px;
+  margin: 50px auto;
   background: white;
-  border-radius: 1%;
+  border-radius: 5px;
   box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
 }
 
-.scroll{
-  max-height: 60vh;
-  overflow: scroll;  
-}
-
 #heading {
-  background-color: #916ecd;
+  background-color: #A683E3;
   text-align: center;
 }
 
@@ -42,9 +35,8 @@ h1 {
 }
 
 input:checked+p {
-  text-decoration: line-through 3px;
-  text-decoration-color: #8d6cc6;
-  color: #536b8a;
+  text-decoration: line-through;
+  text-decoration-color: #A683E3;
 }
 
 input[type="checkbox"] {
@@ -53,10 +45,10 @@ input[type="checkbox"] {
 
 p {
   margin: 0;
-  padding: 10px;
+  padding: 20px;
   font-size: 20px;
   font-weight: 200;
-  color: #0d2647;
+  color: #00204a;
 }
 
 form.item {
@@ -64,26 +56,16 @@ form.item {
   margin-left: 20px;
 }
 
-button.submitBtn {
+button {
   min-height: 50px;
   width: 50px;
   border-radius: 50%;
   border-color: transparent;
-  background-color: #8d6cc6;
+  background-color: #A683E3;
   color: #fff;
   font-size: 30px;
   padding-bottom: 6px;
   border-width: 0;
-}
-
-button {
-  border-color: transparent;
-  background-color: #FFFFFF;
-  border-width: 0;
-}
-
-button :hover {
-  cursor: pointer;
 }
 
 input[type="text"] {
@@ -99,12 +81,12 @@ input[type="text"] {
 
 input[type="text"]:focus {
   outline: none;
-  box-shadow: inset 0 -3px 0 0 #8d6cc6;
+  box-shadow: inset 0 -3px 0 0 #A683E3;
 }
 
 ::placeholder {
   color: grey;
-  opacity: 0.5;
+  opacity: 1;
 }
 
 footer {
